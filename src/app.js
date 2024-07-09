@@ -13,6 +13,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 
 // Rutas
+//Establecemos la ruta base para las rutas de autenticación "/api"
 app.use("/api",authRoutes);
 
 export default app;

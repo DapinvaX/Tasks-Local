@@ -1,5 +1,7 @@
 import mongoose from "mongoose";
 
+//Funcion para conectar a la base de datos
+
 const cnx = async () => {
     try{
 
