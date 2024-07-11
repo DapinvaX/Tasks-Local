@@ -24,7 +24,13 @@ const userSchema = new mongoose.Schema({
         type:String,
         required:true,     
     },
+    
+},
 
+//Definimos los timestamps para que se guarden las fechas de creación y actualización de los usuarios
+//El timestamps es un objeto que sirve para que se guarden las fechas de creación y actualización de los usuarios en la base de datos
+{
+    timestamps:true
 });
 
 export default mongoose.model('User', userSchema);
