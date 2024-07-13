@@ -44,7 +44,7 @@ export const register = async (req, res) => {
         const newUser = new User({
             user, 
             email, 
-            password: passhash
+            password : passhash
         });
 
         // Verificar si el usuario ya existe en la base de datos con el método findOne de mongoose
@@ -52,10 +52,13 @@ export const register = async (req, res) => {
         const existingUser = await User.findOne({ email }) || await User.findOne({ user });
 
         if (existingUser) {
+            
             // Si el usuario ya existe, mostrar un mensaje diciendo que ya existe
             res.send('El usuario ya existe');
             console.log('El usuario ya existe');
+            
         } else {
+            
             // Guardamos el usuario en la base de datos con el método save
             // Al ser una función asincrona, utilizamos await para esperar a que cuando le llegue la respuesta, se guarde en la base de datos.
             // Creamos una constante userSaved para guardar el usuario guardado
@@ -66,23 +69,37 @@ export const register = async (req, res) => {
 
             // Enviamos una respuesta al cliente con los datos del usuario guardado
             //Imprimimos el usuario guardado en la consola (ahora sin la contraseña)
-            res.json({
+            //createdAt es un método de mongoose que nos da la fecha de creación del usuario
+            res.status(200).json({
                 _id: userSaved._id,
                 user: userSaved.user,
                 email: userSaved.email,
-                pass: userSaved.password,
+                //passhash: userSaved.password,
                 createdAt: userSaved.createdAt
-            }, console.log("Usuario registrado"));
+            });
+                
+            console.log("Usuario registrado");
 
-            //Enviamos una respuesta al cliente con el mensaje "Usuario registrado" 
-            //con return ya que con res ya hemos enviado una respuesta y no se puede enviar una respuesta después de haber enviado otra
-            //return('Usuario registrado');
+            //Imprimimos el usuario guardado en la consola
+            //En vez de llamar a userSaved directamente, 
+            //lo convertimos a un objeto JSON con JSON.stringify 
+            //y mostramos solo los campos que nos interesan
+            console.log(JSON.stringify({
+                _id: userSaved._id,
+                user: userSaved.user,
+                email: userSaved.email,
+                //passhash: userSaved.password,
+                createdAt: userSaved.createdAt
+            }, null, 2));
+
         }
 
     }catch(error){
         
         //Si hay un error, lo imprimimos en la consola
         console.log("Error al registrar el usuario", error);
+        res.status(500).json({ mensaje: 'Error interno del servidor' });
+        
     
     }
 }
