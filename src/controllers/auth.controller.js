@@ -4,6 +4,9 @@ import User from '../models/user.model.js';
 //Importamos el modulo bcrypt para encriptar las contraseñas
 import bcrypt from 'bcryptjs';
 
+//Importamos el módulo jsonwebtoken para generar tokens
+import jwt from 'jsonwebtoken';
+
 //Exportamos las funciones de registro y login
 
 //Función para registrar un usuario
@@ -64,6 +67,19 @@ export const register = async (req, res) => {
             // Creamos una constante userSaved para guardar el usuario guardado
             const userSaved = await newUser.save();
 
+            // Generamos un token con el método sign de jwt
+            // El método sign recibe un objeto con los datos que queremos guardar en el token
+            // En este caso guardamos solo el id
+            // MySecretKeyDPX es la clave secreta que utilizamos para firmar el token
+            jwt.sign({
+                id: userSaved._id,
+                //Clave secreta   Tiempo de expiración del token
+            } , 'MySecretKeyDPX', {expiresIn: 3600}, (err, token) => {
+                // Si hay un error, lanzamos una excepción
+                if(err) throw err;
+                res.json({ token });
+            });
+
             // Imprimimos el nuevo usuario en la consola
             //console.log(userSaved);
 
@@ -75,7 +91,8 @@ export const register = async (req, res) => {
                 user: userSaved.user,
                 email: userSaved.email,
                 //passhash: userSaved.password,
-                createdAt: userSaved.createdAt
+                createdAt: userSaved.createdAt,
+                updateAt: userSaved.updateAt
             });
                 
             console.log("Usuario registrado");
@@ -89,17 +106,38 @@ export const register = async (req, res) => {
                 user: userSaved.user,
                 email: userSaved.email,
                 //passhash: userSaved.password,
-                createdAt: userSaved.createdAt
+                createdAt: userSaved.createdAt,
+                updateAt: userSaved.updateAt
             }, null, 2));
 
         }
 
     }catch(error){
         
+        /* if(res.status(500)){
+
         //Si hay un error, lo imprimimos en la consola
         console.log("Error al registrar el usuario", error);
         res.status(500).json({ mensaje: 'Error interno del servidor' });
+
+        } */
         
+        opt = res.status();
+
+        //Filtramos los errores por el código de estado de respuesta erróneo
+        switch(opt){
+            case opt >= 400 && opt < 500:
+                console.log("Error al registrar el usuario", error);
+                res.status(400).json({ mensaje: 'Error de solicitud del cliente.' });
+                break;
+            case opt >= 500 && opt < 600:
+                console.log("Error al registrar el usuario", error);
+                res.status(500).json({ mensaje: 'Error interno del servidor' });
+                break;
+            default:
+                console.log("Error desconocido");
+                break;
+        }
     
     }
 }
