@@ -1,11 +1,14 @@
-//Importamos el modelo User
-import User from '../models/user.model.js';
-
 //Importamos el modulo bcrypt para encriptar las contraseñas
 import bcrypt from 'bcryptjs';
 
 //Importamos el módulo jsonwebtoken para generar tokens
-import jwt from 'jsonwebtoken';
+//import jwt from 'jsonwebtoken';
+
+//Importamos el createAccessToken de jwt.js
+import {createAccessToken} from '../libs/jwt.js';
+
+//Importamos el modelo User
+import User from '../models/user.model.js';
 
 //Exportamos las funciones de registro y login
 
@@ -19,6 +22,8 @@ export const register = async (req, res) => {
     //res.send('Registro');
     //console.log(req.body);
 
+    //Extraemos los datos del usuario, email y password del request body
+    const {user, email, password} = req.body;
    
 
     //Creamos un bloque try-catch para manejar los errores que puedan surgir a la hora de registrar un usuario
@@ -71,13 +76,31 @@ export const register = async (req, res) => {
             // El método sign recibe un objeto con los datos que queremos guardar en el token
             // En este caso guardamos solo el id
             // MySecretKeyDPX es la clave secreta que utilizamos para firmar el token
-            jwt.sign({
-                id: userSaved._id,
-                //Clave secreta   Tiempo de expiración del token
-            } , 'MySecretKeyDPX', {expiresIn: 3600}, (err, token) => {
-                // Si hay un error, lanzamos una excepción
-                if(err) throw err;
-                res.json({ token });
+            
+            //JWT
+            //Usamos la función createAccessToken que hemos importado para generar el token y la guardamos en una constante token
+            const token = await createAccessToken({id: userSaved._id});
+            
+
+            //En vez de enviar el token al cliente (mala práctica), lo guardamos en una cookie
+            //Cookie que guarda el token de sesión
+            res.cookie('token', token);
+
+            //Imprimimos el token en la consola
+            console.log('Token generado: ', token);
+            console.log('Usuario registrado con éxito!');
+
+            // Imprimimos el nuevo usuario en la consola
+            res.status(200).json({
+                message : "Usuario registrado con éxito!",
+                userdata: {
+                _id: userSaved._id,
+                user: userSaved.user,
+                email: userSaved.email,
+                //passhash: userSaved.password,
+                createdAt: userSaved.createdAt,
+                updateAt: userSaved.updateAt
+                },
             });
 
             // Imprimimos el nuevo usuario en la consola
@@ -86,16 +109,16 @@ export const register = async (req, res) => {
             // Enviamos una respuesta al cliente con los datos del usuario guardado
             //Imprimimos el usuario guardado en la consola (ahora sin la contraseña)
             //createdAt es un método de mongoose que nos da la fecha de creación del usuario
-            res.status(200).json({
+            /* res.status(200).json({
                 _id: userSaved._id,
                 user: userSaved.user,
                 email: userSaved.email,
                 //passhash: userSaved.password,
                 createdAt: userSaved.createdAt,
                 updateAt: userSaved.updateAt
-            });
+            }); */
                 
-            console.log("Usuario registrado");
+            //console.log("Usuario registrado");
 
             //Imprimimos el usuario guardado en la consola
             //En vez de llamar a userSaved directamente, 
@@ -114,15 +137,16 @@ export const register = async (req, res) => {
 
     }catch(error){
         
-        /* if(res.status(500)){
+        if(res.status(500)){
 
         //Si hay un error, lo imprimimos en la consola
-        console.log("Error al registrar el usuario", error);
+        console.log("Error al registrar el usuario!", error);
         res.status(500).json({ mensaje: 'Error interno del servidor' });
 
-        } */
-        
-        opt = res.status();
+        }
+        //Si hay un error, lo imprimimos en la consola
+        //Obtenemos el código de estado de respuesta
+        /* const opt = res.status();
 
         //Filtramos los errores por el código de estado de respuesta erróneo
         switch(opt){
@@ -136,10 +160,13 @@ export const register = async (req, res) => {
                 break;
             default:
                 console.log("Error desconocido");
+                throw error;
                 break;
-        }
+        } */
+
+        //console.log(opt);
     
-    }
+    } 
 }
 
 export const login = (req, res) => {
