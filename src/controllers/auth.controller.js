@@ -9,7 +9,7 @@ import {createAccessToken} from '../libs/jwt.js';
 
 //Importamos el modelo User
 import User from '../models/user.model.js';
-import e from 'express';
+
 
 //Exportamos las funciones de registro y login
 
@@ -264,5 +264,15 @@ export const login = async (req, res) => {
         }
     
     } 
+
+}
+
+export const logout = async (req, res) => {
+
+    //JWT
+    //Borramos la cookie con el token para desloguear al usuario con sesión activa
+    res.clearCookie('token');
+    res.status(200).json({message: 'Usuario deslogueado con éxito!'});
+    console.log('Usuario deslogueado con éxito!');
 
 }
