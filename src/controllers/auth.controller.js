@@ -9,6 +9,7 @@ import {createAccessToken} from '../libs/jwt.js';
 
 //Importamos el modelo User
 import User from '../models/user.model.js';
+import e from 'express';
 
 //Exportamos las funciones de registro y login
 
@@ -169,12 +170,99 @@ export const register = async (req, res) => {
     } 
 }
 
-export const login = (req, res) => {
+export const login = async (req, res) => {
     //Aquí hacemos la lógica de login
     
-    //res.send('Login');
+    
+    //res.send('Registro');
     //console.log(req.body);
 
-    const {user, password} = req.body;
+    //Extraemos los datos del usuario, email y password del request body
+    const {user, email, password} = req.body;
+
+    //Creamos un bloque try-catch para manejar los errores que puedan surgir a la hora de loguear un usuario
+    try{
+         //Aquí hacemos la lógica de login
+
+        //Buscamos el usuario en la base de datos con el método findOne de mongoose para ver si existe
+        //El método findOne recibe un objeto con el nombre de usuario o email 
+        const userFound = await User.findOne({ $or: [{ user: user }, { email: email }] });
+
+          //Comparar la contraseña introducida con la contraseña encriptada de la base de datos
+            const coincidencia = await bcrypt.compare(password, userFound.password);
+
+
+            //Si el usuario no existe, mostramos un mensaje diciendo que no existe
+            if (!userFound) {
+
+                // Si el usuario no existe, mostrar un mensaje diciendo que no existe
+                console.log('El usuario no existe');
+                return res.status(400).json({message: 'El usuario no existe'});
+                
+
+            }
+            else if (!coincidencia) {
+                console.log('Contraseña incorrecta!');
+                return res.status(400).json({message: 'Contraseña incorrecta'});
+            }else{
+                    
+                //JWT
+                //Usamos la función createAccessToken que hemos importado para generar el token y la guardamos en una constante token
+                const token = await createAccessToken({id: userFound._id});
+                
+
+                //En vez de enviar el token al cliente (mala práctica), lo guardamos en una cookie
+                //Cookie que guarda el token de sesión
+                res.cookie('token', token);
+
+                //Imprimimos el token en la consola
+                console.log('Token generado: ', token);
+                console.log('Usuario Logueado con éxito!');
+
+                // Imprimimos el nuevo usuario en la consola
+                res.status(200).json({
+                    message : "Usuario Logueado con éxito!",
+                    userdata: {
+                    _id: userFound._id,
+                    user: userFound.user,
+                    email: userFound.email,
+                    //passhash: userFound.password,
+                    createdAt: userFound.createdAt,
+                    updateAt: userFound.updateAt
+                    },
+                });
+
+                //Imprimimos el usuario guardado en la consola
+                //En vez de llamar a userSaved directamente, 
+                //lo convertimos a un objeto JSON con JSON.stringify 
+                //y mostramos solo los campos que nos interesan
+                console.log(JSON.stringify({
+                    message : "Usuario Logueado con éxito!",
+                    userdata:
+                    {
+                        _id: userFound._id,
+                        user: userFound.user,
+                        email: userFound.email,
+                        //passhash: userFound.password,
+                        createdAt: userFound.createdAt,
+                        updateAt: userFound.updateAt
+                    }
+                }, null, 2));
+
+
+            }
+      
+
+    }catch(error){
+        
+        if(res.status(500)){
+
+        //Si hay un error, lo imprimimos en la consola
+        console.log("Error al loguear el usuario!", error);
+        res.status(500).json({ mensaje: 'Error interno del servidor' });
+
+        }
+    
+    } 
 
 }
