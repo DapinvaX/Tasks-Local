@@ -5,10 +5,11 @@ import bcrypt from 'bcryptjs';
 //import jwt from 'jsonwebtoken';
 
 //Importamos el createAccessToken de jwt.js
-import {createAccessToken} from '../libs/jwt.js';
+import { createAccessToken } from '../libs/jwt.js';
 
 //Importamos el modelo User
 import User from '../models/user.model.js';
+
 
 
 //Exportamos las funciones de registro y login
@@ -270,9 +271,54 @@ export const login = async (req, res) => {
 export const logout = async (req, res) => {
 
     //JWT
-    //Borramos la cookie con el token para desloguear al usuario con sesión activa
-    res.clearCookie('token');
+    //Eliminamos la cookie token
+    //La cookie token se elimina asignando un valor vacío y un tiempo de vida de 1 milisegundo
+    res.cookie('token', '', {
+        maxAge: 1
+    });
+    
     res.status(200).json({message: 'Usuario deslogueado con éxito!'});
     console.log('Usuario deslogueado con éxito!');
 
+}
+
+export const profile = async (req, res) => {
+    
+    //Buscamos el usuario en la base de datos con el método findById de mongoose
+    const userFound = User.findById(req.user._id);
+
+    if(!userFound){
+        // Si el usuario no existe, mostrar un mensaje diciendo que no existe
+        console.log('Usuario no encontrado');
+        return res.status(404).json({message: 'Usuario no encontrado'});
+    }else{
+        // Si el usuario existe, mostrar un mensaje "Perfil de usuario"
+        console.log("Perfil de usuario!");
+        
+        
+        //res.send('Perfil de usuario');
+        res.status(200).json({
+            message: 'Perfil de usuario',
+            user: {
+                _id: userFound._id,
+                user: userFound.user,
+                email: userFound.email,
+                //passhash: userFound.password,
+                createdAt: userFound.createdAt,
+                updateAt: userFound.updateAt
+            },
+            cookie: req.headers.cookie,
+
+            });
+        
+
+
+        //Obtenemos los headers de la petición y los guardamos en una constante token
+        const cookie = req.headers.cookie;
+
+        //Mostramos el token en la consola
+        console.log(cookie);
+
+    }
+    
 }
