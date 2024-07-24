@@ -40,7 +40,7 @@ export const authRequired = (req, res, next) => {
                 console.log("Token válido. Acceso permitido.");
 
                 //Guardamos el usuario decodificado en una variable user
-                req.user=user;
+                req.user = decoded;
 
                 //Se ejecuta la siguiente función
                 next();

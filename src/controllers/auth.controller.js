@@ -229,7 +229,8 @@ export const login = async (req, res) => {
                     email: userFound.email,
                     //passhash: userFound.password,
                     createdAt: userFound.createdAt,
-                    updateAt: userFound.updateAt
+                    updateAt: userFound.updateAt,
+                    //headers: req.headers
                     },
                 });
 
@@ -268,6 +269,55 @@ export const login = async (req, res) => {
 
 }
 
+
+export const profile = async (req, res) => {
+    
+    
+    
+    // Buscamos el usuario en la base de datos con el método findById de mongoose
+    const userFound = await User.findById(req.user.id);
+    
+    // Si el usuario no ha sido encontrado o no existe, mostramos un mensaje de error
+    if (!userFound) {
+        console.log('Usuario no encontrado o no existe');
+        return res.status(404).json({message: 'Usuario no encontrado o no existe'});
+    }
+        // Si el usuario existe, mostrar un mensaje "Perfil de usuario"
+        console.log("Perfil de usuario!");
+        
+        //Obtenemos los headers de la petición y los guardamos en una constante token
+        const cookies = req.headers.cookie;
+        
+        //Mostramos el token en la consola
+        console.log(cookies);
+    
+        //Imprimimos el usuario encontrado en la consola
+        console.log(JSON.stringify({
+            message: "Perfil de usuario",
+            userdata: {
+            _id: userFound._id,
+            user: userFound.user,
+            email: userFound.email,
+            createdAt: userFound.createdAt,
+            updateAt: userFound.updateAt
+            }
+        }, null, 2));
+
+        return res.status(200).json({
+            message: "Perfil de usuario",
+            userdata: {
+            _id: userFound._id,
+            user: userFound.user,
+            email: userFound.email,
+            createdAt: userFound.createdAt,
+            updateAt: userFound.updateAt
+            }
+        }); 
+        
+    
+    
+}
+
 export const logout = async (req, res) => {
 
     //JWT
@@ -280,45 +330,4 @@ export const logout = async (req, res) => {
     res.status(200).json({message: 'Usuario deslogueado con éxito!'});
     console.log('Usuario deslogueado con éxito!');
 
-}
-
-export const profile = async (req, res) => {
-    
-    //Buscamos el usuario en la base de datos con el método findById de mongoose
-    const userFound = User.findById(req.user._id);
-
-    if(!userFound){
-        // Si el usuario no existe, mostrar un mensaje diciendo que no existe
-        console.log('Usuario no encontrado');
-        return res.status(404).json({message: 'Usuario no encontrado'});
-    }else{
-        // Si el usuario existe, mostrar un mensaje "Perfil de usuario"
-        console.log("Perfil de usuario!");
-        
-        
-        //res.send('Perfil de usuario');
-        res.status(200).json({
-            message: 'Perfil de usuario',
-            user: {
-                _id: userFound._id,
-                user: userFound.user,
-                email: userFound.email,
-                //passhash: userFound.password,
-                createdAt: userFound.createdAt,
-                updateAt: userFound.updateAt
-            },
-            cookie: req.headers.cookie,
-
-            });
-        
-
-
-        //Obtenemos los headers de la petición y los guardamos en una constante token
-        const cookie = req.headers.cookie;
-
-        //Mostramos el token en la consola
-        console.log(cookie);
-
-    }
-    
 }
