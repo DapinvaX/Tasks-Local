@@ -1,8 +1,13 @@
 import express from 'express';
 import morgan from 'morgan';
 
+// Importamos las rutas de autenticación
 import authRoutes from './routes/auth.routes.js';
 
+//Importamos las rutas de tareas
+import taskRoutes from './routes/task.routes.js';
+
+// Importamos cookie-parser
 import cookieParser from 'cookie-parser';
 
 // Inicialización de express
@@ -21,4 +26,8 @@ app.use(cookieParser());
 //Establecemos la ruta base para las rutas de autenticación "/api"
 app.use("/api",authRoutes);
 
+//Establecemos la ruta base para las rutas de tareas "/api" para  todos los taksroutes
+app.use("/api",taskRoutes);
+
+// Exportamos app para poder utilizarlo en otros archivos
 export default app;
