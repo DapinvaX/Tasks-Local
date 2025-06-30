@@ -1,7 +1,6 @@
 # Proyecto Final: Gestor de Tareas Fullstack
 
 **Autor:** Daniel Pintado Várez  
-**Fecha:** 28 de mayo de 2025
 
 ---
 
